@@ -19,6 +19,5 @@ services:
         working_dir: /app-server
         volumes:
             - ./server:/app-server
-        environment:
-            DATABASE_URL: postgresql://postgres:Kawakl049516@db.pijzhjwucdabdqhqlcmz.supabase.co:5432/postgres?schema=public
-            JWT_SECRET: senhaforte
+        env_file:
+            - ./server/.env

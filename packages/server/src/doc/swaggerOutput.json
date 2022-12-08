@@ -1,0 +1,235 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Documentação REST API NGCash",
+        "description": "Introdução\n\nREST API carteira digital\n\nVisão Geral\n\nAPI contém as seguintes rotas:\n\n(POST: /newUser): Cria um novo usuário;\n(POST: /login): Verifica o acesso do usuário através de um token;\n(GET: /balance): Retorna as informações da conta do usuário;\n(PACTH: /cashOutIn): Realizar transações na conta (Débito e Crédito) \n(POST: /transaction): Retornar o histórico das transações dos usuário, sendo possível filtrar por: data e/ou cash-out, cash-in\n\nAutenticação\n\nA API é autenticada via token, sendo necessário informa-lá para acessar algumas rotas."
+    },
+    "host": "localhost:3025",
+    "basePath": "/",
+    "schemes": [
+        "http"
+    ],
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "headers"
+        }
+    },
+    "paths": {
+        "/newUser": {
+            "post": {
+                "tags": ["User"],
+                "description": "Rota responsável por criar um novo usuário no banco de dados",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "description": "O nome deve ter no mínimo 3 caracteres,",
+                                    "example": "Afonso"
+                                },
+                                "password":  {
+                                    "description": "A senha deve conter:\nNo mínimo 8 caracteres;\n1 letra maiúscula e\n1 numero.",
+                                    "example": "MinhaSenha123"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Usuário criado com sucesso"
+                    },
+                    "400": {
+                        "description": "Usuário já existe"
+                    },
+                    "405": {
+                        "description": "Erro de validação do JOI"
+                    },
+                    "424": {
+                        "description": "Falha ao fazer o hash da senha"
+                    },
+                    "500": {
+                        "description": "Internal sever error"
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "tags": ["User"],
+                "description": "Rota responsável por fazer o acesso ao login",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "description": "O usuário deve estar cadastrado no banco de dados",
+                                    "example": "Afonso"
+                                },
+                                "password":  {
+                                    "description": "A senha deve estar cadastrada no banco de dados",
+                                    "example": "MinhaSenha123"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Retorna um token JWT"
+                    },
+                    "400": {
+                        "description": "Usuário não existe ou senha inválida"
+                    },
+                    "405": {
+                        "description": "Erro de validação do JOI"
+                    },
+                    "500": {
+                        "description": "Internal sever error"
+                    }
+                }
+            }
+        },
+        "/balance": {
+            "get": {
+                "tags": ["Account"],
+                "description": "Rota responsável por retornar o saldo (balance) do usuário",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retorna o saldo (balance) correspondente ao usuário"
+                    },
+                    "401": {
+                        "description": "Token invalido ou expirado"
+                    },
+                    "417": {
+                        "description": "Token é necessário"
+                    },
+                    "500": {
+                        "description": "Internal sever error"
+                    }
+                }
+            }
+        },
+        "/cashOutIn": {
+            "patch": {
+                "tags": ["Transactions"],
+                "description": "Rota responsável por realizar transações na conta (Débito e Crédito)",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "value": {
+                                    "description": "Valor a ser transferido.\nDever ser um número;\nDeve ser um valor abaixo ou igual ao balance (saldo) da conta",
+                                    "example": 10.20
+                                },
+                                "username":  {
+                                    "description": "Nome do favorecido (cadastrado) a receber o valor",
+                                    "example": "Tamiris"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transferência efetuada com sucesso"
+                    },
+                    "400": {
+                        "description": "Falha na transferência, confira as informações fornecidas!"
+                    },
+                    "401": {
+                        "description": "Token invalido ou expirado"
+                    },
+                    "405": {
+                        "description": "Erro de validação do JOI"
+                    },
+                    "417": {
+                        "description": "Token é necessário"
+                    },
+                    "500": {
+                        "description": "Internal sever error"
+                    }
+                }
+            }
+        },
+        "/transaction": {
+            "post": {
+                "tags": ["Transactions"],
+                "description": "Rota responsável por retornar o histórico das transações dos usuário, sendo possível filtrar por: data e/ou cash-out, cash-in",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "date": {
+                                    "description": "Aplica a filtragem por data de transação",
+                                    "type": "Date",
+                                    "example": "2022-11-21"
+                                },
+                                "debited":  {
+                                    "description": "Aplica a filtragem por débito",
+                                    "type": "Boolean",
+                                    "example": true
+                                },
+                                "credited": {
+                                    "description": "Aplica a filtragem por crédito",
+                                    "type": "Boolean",
+                                    "example": false
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retorna a transação filtrada feita pelo usuário"
+                    },
+                    "401": {
+                        "description": "Token invalido ou expirado"
+                    },
+                    "404": {
+                        "description": "Nenhuma transação encontrada"
+                    },
+                    "405": {
+                        "description": "Erro de validação do JOI"
+                    },
+                    "417": {
+                        "description": "Token é necessário"
+                    },
+                    "500": {
+                        "description": "Internal sever error"
+                    }
+                }
+            }
+        }
+    }
+}

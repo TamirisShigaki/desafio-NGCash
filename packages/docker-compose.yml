@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+    web:
+        container_name: /front
+        build: ./web
+        ports:
+            - 3026:3026
+        working_dir: /app
+        volumes:
+            - ./web:/app
+
+    server:
+        container_name: /back
+        build: ./server
+        ports:
+            - 3025:3025
+            - 5555:5555
+        working_dir: /app-server
+        volumes:
+            - ./server:/app-server
+        environment:
+            DATABASE_URL: postgresql://postgres:Kawakl049516@db.pijzhjwucdabdqhqlcmz.supabase.co:5432/postgres?schema=public
+            JWT_SECRET: senhaforte
